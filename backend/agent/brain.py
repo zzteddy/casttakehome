@@ -41,7 +41,11 @@ usually "new" unless it clearly refers to that request ("@bot for Alice's questi
 the request it was merged into.
 - "trivial" is only for messages that need no context at all. If answering means reading or judging what \
 someone else said in the chat, choose "new" (workers see the recent transcript).
-- If unsure between "new" and "edit", choose "new"; a duplicate answer is cheaper than a hijacked one.
+- A short fragment from someone whose own request is still OPEN ("and goog", "also AMD", "for 1y", "what \
+about SPY") continues that request: choose "edit" targeting it, even if other fragments of theirs are still \
+being routed. Choose "new" only if it is clearly a separate question.
+- If unsure between "new" and "edit" for a message from a DIFFERENT person than the open request's asker, \
+choose "new"; a duplicate answer is cheaper than a hijacked one.
 - If the new message was posted as a reply in a thread, it is almost certainly about that thread: a change \
 to that thread's pending request is "edit" targeting it; a further question is "new" (it will be \
 answered inside the thread, with the thread's history).
@@ -74,9 +78,13 @@ def _render_history(history: list[dict]) -> str:
         elif h["kind"] == "merged":
             state = f"merged into #{h['target']}"
         elif h["kind"] == "pending":
-            state = "still being routed"
+            state = "arrived moments ago, still being routed; may itself be part of an earlier request"
         elif h["delivered"]:
             state = f"answered: {h['answer']!r}"
+        elif h["kind"] == "request":
+            state = f"OPEN request, not answered yet ({h['status']}); edits to it still apply"
+        elif h["kind"] == "cancelled":
+            state = "cancelled"
         else:
             state = f"{h['kind']}, {h['status']}"
         where = f" in thread #{h['thread']}" if h["thread"] != h["n"] else ""
