@@ -210,15 +210,19 @@ most serious first:
   worker still has its NVDA steps in context and is trusted to set them aside.
 - **A trivial answer held behind an earlier question in its thread can't be
   edited.** The edit becomes a follow-up, so both get posted. Rare.
+- **The quiet wait has no upper limit.** Each related message (from the asker,
+  or anyone replying in the request's thread) restarts the 3s wait. If people
+  keep talking in that thread at least every 3s, the worker never starts and
+  the request is never answered. A maximum, such as starting regardless 10s
+  after the first message, would fix it.
 
 **Under load**
 
 - **Router calls have no concurrency cap.** Only workers are capped (8 per
   chat). A large burst could hit API rate limits. Each failed route falls
   back to `new`, which then starts unneeded workers.
-- **Edits are unbounded.** Steady messages keep extending the 3s wait, and
-  heavy editing ends in the worker's 10-step limit and a "try narrowing it
-  down" reply.
+- **Edits to a running worker are unbounded.** Heavy editing ends in the
+  worker's 10-step limit and a "try narrowing it down" reply.
 - **Memory only grows.** Chats are never removed, and each keeps every event.
 - **Fixed context windows:** the router sees the last 20 messages, the worker
   the last 15. Older context in a busy chat is lost unless it's in the thread.
